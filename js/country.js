@@ -9,7 +9,6 @@ import {
   yearSelect,
   capitalize,
   toastPopup,
-  clearSelectedCountry,
   editDefaultValues,
 } from "./main.js";
 import Plan from "./plan.js";
@@ -288,7 +287,6 @@ export default class Country {
     countrySelect.value = "";
     citySelect.value = "";
     editDefaultValues();
-    clearSelectedCountry();
     toastPopup("info", "circle-info", "Selection cleared!");
     this.reset();
   }
@@ -327,6 +325,9 @@ export default class Country {
     this.facts = null;
     this.cachedSections = {};
     this.alreadyExplored = false;
+    this.holidays = null;
+    this.longWeekends = null;
+    this.events = null;
   }
   async getListData(api, sectionName) {
     try {
@@ -416,12 +417,27 @@ export default class Country {
         </div>
         <h3>No ${capitalize(sectionName)} Found</h3>
         <p>Please try again later or try another country</p>
-        <button id="toDashboardBtn" class="btn btn-primary" onclick="goToDashboard()">
+        <button id="toDashboardBtn" class="btn btn-primary">
           <i class="fas fa-globe"></i>
           Go to Dashboard
         </button>
       </div>
     `;
+    const dashboardBtn = document.querySelector(
+        `#${sectionName}-view #toDashboardBtn`,
+      ),
+      selectedPageId = `#${sectionName}-view`,
+      selectedPage = document.querySelector(selectedPageId);
+    if (dashboardBtn)
+      dashboardBtn.addEventListener("click", () => {
+        const dashboardPage = document.querySelector("#dashboard-view"),
+          dashboardNavLink = document.querySelector(
+            ".nav-item[data-view='dashboard']",
+          );
+        selectedPage.classList.remove("active");
+        dashboardPage.classList.add("active");
+        dashboardNavLink.classList.add("active");
+      });
   }
   async showSelectedSection(sectionApiUrl, sectionName) {
     showLoading();

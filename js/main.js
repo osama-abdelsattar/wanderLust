@@ -82,9 +82,6 @@ export function editDefaultValues() {
     citySelect.removeChild(option);
   });
 }
-export function clearSelectedCountry() {
-  selectedCountry = null;
-}
 async function getCity(selectedCountryCode) {
   const response = await fetch(
       `https://restcountries.com/v3.1/alpha/${selectedCountryCode}`,
@@ -127,6 +124,6 @@ export function debounce(func, delay = 300) {
   getAllCountryOptions();
   const plansBadge = document.querySelector("#plans-count"),
     planList = JSON.parse(localStorage.getItem("plans"));
-  plansBadge.classList.remove("hidden");
+  if (planList.length !== 0) plansBadge.classList.remove("hidden");
   plansBadge.innerHTML = planList.length;
 })();
