@@ -22,7 +22,17 @@ export default function eventListeners() {
     pages = document.querySelectorAll(".view"),
     exploreBtn = document.querySelector("#global-search-btn"),
     headerTitle = document.querySelector("#top-header #page-title"),
-    headerSubtitle = document.querySelector("#top-header #page-subtitle");
+    headerSubtitle = document.querySelector("#top-header #page-subtitle"),
+    convertCurrencyBtn = document.querySelector("#convert-btn"),
+    currencyFromSelect = document.querySelector("#currency-from"),
+    currencyToSelect = document.querySelector("#currency-to"),
+    swapCurrenciesBtn = document.querySelector("#swap-currencies-btn"),
+    favoriteCurrencyBtns = document.querySelectorAll(
+      "#popular-currencies .popular-currency-card",
+    ),
+    clearPlansBtn = document.querySelector("#clear-all-plans-btn"),
+    planPageNavs = document.querySelectorAll(".plan-filter");
+  let currencyLastUpdated = null;
   // Navigation Listeners
   menuBtn.addEventListener("click", () => {
     sidebar.style.transform = "translateX(0)";
@@ -62,60 +72,16 @@ export default function eventListeners() {
         ![...countrySelect].find(
           (option) => option.value === selectedCountry?.code,
         ) &&
-        sectionName !== "dashboard"
+        !["dashboard", "currency"].includes(sectionName)
       ) {
         showEmptyStates();
       }
       if (sectionName === "plans") {
-        const clearPlansBtn = document.querySelector("#clear-all-plans-btn");
-        clearPlansBtn.addEventListener("click", () => {
-          if (
-            localStorage.getItem("plans") &&
-            localStorage.getItem("plans") !== "[]"
-          ) {
-            Swal.fire({
-              title: "Clear All Plans?",
-              text: "This will permanently delete all your saved plans. This action cannot be undone!",
-              icon: "warning",
-              showCancelButton: true,
-              confirmButtonColor: "#ef4444",
-              cancelButtonColor: "#64748b",
-              confirmButtonText: "Yes, clear all!",
-            }).then((result) => {
-              if (result.isConfirmed) {
-                localStorage.setItem("plans", "[]");
-                displayPlans();
-                Swal.fire({
-                  title: "Cleared",
-                  text: "All your plans have been deleted",
-                  icon: "success",
-                });
-              }
-            });
-          } else {
-            Swal.fire({
-              title: "No Plans",
-              text: "There are no saved plans to clear.",
-              icon: "info",
-            });
-          }
-        });
         displayPlans();
       }
-      const dashboardBtn = document.querySelector(
-        `#${sectionName}-view #toDashboardBtn`,
-      );
-      if (dashboardBtn)
-        dashboardBtn.addEventListener("click", () => {
-          const dashboardPage = document.querySelector("#dashboard-view"),
-            dashboardNavLink = document.querySelector(
-              ".nav-item[data-view='dashboard']",
-            );
-          selectedPage.classList.remove("active");
-          e.target.classList.remove("active");
-          dashboardPage.classList.add("active");
-          dashboardNavLink.classList.add("active");
-        });
+      if (sectionName === "currency") {
+        displayFavoriteCurrencyConversion();
+      }
     });
   });
   function removeActiveFromPrevious(allItems) {
@@ -151,7 +117,7 @@ export default function eventListeners() {
         break;
       case "events":
         endpoints = [
-          { prop: "apikey", query: "VwECw2OiAzxVzIqnwmKJUG41FbeXJk1y" },
+          { prop: "apikey", query: "iDgFFw8AI8DL3wVKtASnCxOI0EWKlOBs" },
           {
             prop: "city",
             query: decodeURIComponent(selectedCountry.cityName),
@@ -186,10 +152,6 @@ export default function eventListeners() {
       case "long-weekends":
         sectionApiUrl = `https://date.nager.at/api/v3/LongWeekend/${yearSelect.value}/${selectedCountry.code}`;
         break;
-      case "currency":
-        sectionApiUrl =
-          "https://v6.exchangerate-api.com/v6/805842951e5953ad31497176/latest/USD";
-        break;
       case "sun-times":
         endpoints = [
           { prop: "lat", query: selectedCountry.facts.latitude },
@@ -210,15 +172,13 @@ export default function eventListeners() {
         break;
     }
     if (sectionApiUrl) return sectionApiUrl;
-    else return;
   }
   function showEmptyStates(...only) {
     const pageEmptyStateContainers = document.querySelectorAll(
-        only.length === 0
-          ? "section.view > [id $='-content']"
-          : only.map((item) => `#${item}-content`).join(", "),
-      ),
-      plansBadge = document.querySelector("#plans-count");
+      only.length === 0
+        ? "section.view > [id $='-content']"
+        : only.map((item) => `#${item}-content`).join(", "),
+    );
     pageEmptyStateContainers.forEach((container) => {
       const sectionName = container.id.split("-"),
         emptyStateText = () => {
@@ -271,16 +231,49 @@ export default function eventListeners() {
         </div>
       `;
     });
+    const dashboardBtns = document.querySelectorAll(`#toDashboardBtn`),
+      selectedPage = document.querySelector("section.view.active");
+    if (dashboardBtns)
+      dashboardBtns.forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          const dashboardPage = document.querySelector("#dashboard-view"),
+            dashboardNavLink = document.querySelector(
+              ".nav-item[data-view='dashboard']",
+            );
+          selectedPage.classList.remove("active");
+          e.target.classList.remove("active");
+          dashboardPage.classList.add("active");
+          dashboardNavLink.classList.add("active");
+        });
+      });
   }
-  function displayPlans() {
+  function displayPlans(...only) {
     const planList = JSON.parse(localStorage.getItem("plans")),
       plansContainer = document.querySelector("#plans-content"),
-      plansBadge = document.querySelector("#plans-count");
+      plansBadge = document.querySelector("#plans-count"),
+      filterAllCount = document.querySelector("#filter-all-count"),
+      filterHolidayCount = document.querySelector("#filter-holiday-count"),
+      filterEventCount = document.querySelector("#filter-event-count"),
+      filterLongWeekendCount = document.querySelector("#filter-lw-count");
     if (planList.length !== 0) {
-      let planCards = "";
+      let planCards = "",
+        holidaysCount = 0,
+        eventsCount = 0,
+        longWeekendsCount = 0;
       planList.forEach(({ type, data }, i) => {
+        switch (type) {
+          case "holidays":
+            holidaysCount++;
+            break;
+          case "events":
+            eventsCount++;
+            break;
+          case "longWeekends":
+            longWeekendsCount++;
+            break;
+        }
         planCards += `
-          <div class="plan-card">
+          <div class="plan-card" data-type="${type}">
             <span class="plan-card-type ${type.slice(0, -1).toLowerCase()}">${type}</span>
             <div class="plan-card-content">
               <h4>${
@@ -347,9 +340,26 @@ export default function eventListeners() {
         `;
       });
       plansContainer.innerHTML = planCards;
-      plansBadge.innerHTML = planList.length;
+      filterAllCount.innerHTML = plansBadge.innerHTML = planList.length;
+      filterHolidayCount.innerHTML = holidaysCount;
+      filterEventCount.innerHTML = eventsCount;
+      filterLongWeekendCount.innerHTML = longWeekendsCount;
+      if (only) {
+        const planCards = document.querySelectorAll(".plan-card");
+        only.forEach((filterItem) => {
+          if (filterItem !== "all")
+            planCards.forEach((card) => {
+              if (card.dataset.type !== filterItem)
+                card.classList.add("hidden");
+              else card.classList.remove("hidden");
+            });
+          else {
+            planCards.forEach((card) => card.classList.remove("hidden"));
+          }
+        });
+      }
       const removePlanBtns = document.querySelectorAll(".btn-plan-remove");
-      removePlanBtns?.forEach((btn) => {
+      removePlanBtns.forEach((btn) => {
         btn.addEventListener("click", (e) => {
           const thisIndex = e.target.dataset.index,
             plan = new Plan();
@@ -365,6 +375,14 @@ export default function eventListeners() {
             if (result.isConfirmed) {
               plan.delete(thisIndex, planList);
               displayPlans();
+              const pervActiveBtn = document.querySelector(
+                  ".plan-filter.active",
+                ),
+                allPlansBtn = document.querySelector(
+                  ".plan-filter:first-child",
+                );
+              pervActiveBtn.classList.remove("active");
+              allPlansBtn.classList.add("active");
               Swal.fire({
                 title: "Cleared",
                 text: "The plan has been removed",
@@ -377,7 +395,26 @@ export default function eventListeners() {
     } else {
       showEmptyStates("plans");
       plansBadge.classList.add("hidden");
+      [
+        filterAllCount,
+        filterHolidayCount,
+        filterEventCount,
+        filterLongWeekendCount,
+      ].forEach((count) => (count.innerHTML = "0"));
     }
+  }
+  async function displayFavoriteCurrencyConversion(from = "USD") {
+    const response = await fetch(
+        `https://v6.exchangerate-api.com/v6/035fcf8658d9e4862ae18302/latest/${from}`,
+      ),
+      { conversion_rates, time_last_update_utc } = await response.json();
+    favoriteCurrencyBtns.forEach((btn) => {
+      const currencyCode = btn.querySelector(".code"),
+        currencyRate = btn.querySelector(".rate");
+      currencyRate.innerHTML =
+        conversion_rates[currencyCode.textContent].toFixed(4);
+    });
+    currencyLastUpdated = time_last_update_utc;
   }
   // Dashboard Form Listeners
   countrySelect.addEventListener(
@@ -407,15 +444,125 @@ export default function eventListeners() {
       delete selectedCountry.cachedSections["long-weekends"];
     }
   });
-  exploreBtn.addEventListener("click", () => {
+  exploreBtn.addEventListener("click", async () => {
     if (selectedCountry) {
-      selectedCountry.exploreCountry();
+      await selectedCountry.exploreCountry();
+      addCountryCurrencyToConverter(selectedCountry);
       toastPopup(
         "success",
         "circle-check",
         `Exploring ${selectedCountry.name}, ${selectedCountry.cityName}!`,
       );
     }
+  });
+  // Currency Page Listeners
+  currencyFromSelect.addEventListener("change", async (e) => {
+    displayFavoriteCurrencyConversion(e.currentTarget.value);
+  });
+  convertCurrencyBtn.addEventListener("click", async () => {
+    convertCurrency(currencyFromSelect.value, currencyToSelect.value);
+  });
+  swapCurrenciesBtn.addEventListener("click", swapSelect);
+  favoriteCurrencyBtns.forEach((btn) => {
+    const currencyCode = btn.querySelector(".code");
+    btn.addEventListener("click", () => {
+      currencyFromSelect.value =
+        currencyFromSelect.value === "" ? "USD" : currencyFromSelect.value;
+      currencyToSelect.value = currencyCode.textContent;
+      convertCurrency(currencyFromSelect.value, currencyToSelect.value);
+    });
+  });
+  function swapSelect() {
+    const tempValue = currencyToSelect.value;
+    currencyToSelect.value = currencyFromSelect.value;
+    currencyFromSelect.value = tempValue;
+    displayFavoriteCurrencyConversion(currencyFromSelect.value);
+  }
+  async function convertCurrency(from, to) {
+    const currencyResult = document.querySelector("#currency-result"),
+      currencyAmount = document.querySelector("#currency-amount");
+    if (currencyAmount.value == 0) {
+      alert("plz select a valid amount (shouldn't be zero)");
+      return;
+    }
+    if (currencyFromSelect.value === currencyToSelect.value) {
+      alert("You shouldn't choose similar currencies");
+      return;
+    }
+    const response = await fetch(
+        `https://v6.exchangerate-api.com/v6/035fcf8658d9e4862ae18302/pair/${from}/${to}/${currencyAmount.value}`,
+      ),
+      { conversion_result, base_code, target_code, conversion_rate } =
+        await response.json();
+    currencyResult.classList.remove("hidden");
+    currencyResult.innerHTML = `
+      <div class="conversion-display">
+        <div class="conversion-from">
+          <span class="amount">${currencyAmount.value}</span>
+          <span class="currency-code">${base_code}</span>
+        </div>
+        <div class="conversion-equals">
+          <i class="fa-solid fa-equals"></i>
+        </div>
+        <div class="conversion-to">
+          <span class="amount">${conversion_result.toFixed(3)}</span>
+          <span class="currency-code">${target_code}</span>
+        </div>
+      </div>
+      <div class="exchange-rate-info">
+        <p>1 ${base_code} = ${conversion_rate.toFixed(3)} ${target_code}</p>
+        <small>Last updated: ${new Date(currencyLastUpdated).toLocaleDateString(
+          "en-US",
+          {
+            month: "long",
+            day: "2-digit",
+            year: "numeric",
+          },
+        )}</small>
+      </div>
+    `;
+  }
+  // Plans Listeners
+  clearPlansBtn.addEventListener("click", () => {
+    if (
+      localStorage.getItem("plans") &&
+      localStorage.getItem("plans") !== "[]"
+    ) {
+      Swal.fire({
+        title: "Clear All Plans?",
+        text: "This will permanently delete all your saved plans. This action cannot be undone!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#ef4444",
+        cancelButtonColor: "#64748b",
+        confirmButtonText: "Yes, clear all!",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          localStorage.setItem("plans", "[]");
+          displayPlans();
+          Swal.fire({
+            title: "Cleared",
+            text: "All your plans have been deleted",
+            icon: "success",
+          });
+        }
+      });
+    } else {
+      Swal.fire({
+        title: "No Plans",
+        text: "There are no saved plans to clear.",
+        icon: "info",
+      });
+    }
+  });
+  planPageNavs.forEach((nav) => {
+    nav.addEventListener("click", (e) => {
+      const pervActiveBtn = document.querySelector(".plan-filter.active"),
+        filter = e.currentTarget.dataset.filter;
+      pervActiveBtn.classList.remove("active");
+      e.currentTarget.classList.add("active");
+      displayPlans(filter);
+    });
   });
 }
 export function neighborListeners() {
@@ -463,5 +610,33 @@ export function neighborListeners() {
       hideLoading();
       alert("failed to get neighbor country data");
     }
+  }
+}
+function addCountryCurrencyToConverter(country) {
+  const currencyFromSelect = document.querySelector("#currency-from"),
+    currencyToSelect = document.querySelector("#currency-to"),
+    currencies = country.facts.currency;
+  Object.keys(currencies).forEach((currencyCode) => {
+    const currencyInfo = currencies[currencyCode],
+      currencyName = currencyInfo.name,
+      currencyExistsInFrom = [...currencyFromSelect].some(
+        (option) => option.value === currencyCode,
+      ),
+      currencyExistsInTo = [...currencyToSelect].some(
+        (option) => option.value === currencyCode,
+      ),
+      optionText = `${currencyCode} - ${currencyName}`;
+    if (!currencyExistsInFrom) {
+      addOption(currencyCode, currencyFromSelect, optionText);
+    }
+    if (!currencyExistsInTo) {
+      addOption(currencyCode, currencyToSelect, optionText);
+    }
+  });
+  function addOption(currencyCode, select, optionText) {
+    const newOption = document.createElement("option");
+    newOption.value = currencyCode;
+    newOption.textContent = optionText;
+    select.appendChild(newOption);
   }
 }

@@ -402,7 +402,7 @@ export default class Country {
             toastPopup("info", "info-circle", "Removed from plans!");
             plan.delete(plan.findIndex(planData, planType));
             plansBadge.innerHTML = plan.planList.length;
-            if (plan.planList.length === 0) console.log("hidden");
+            if (plan.planList.length === 0) plansBadge.classList.add("hidden");
           }
         });
       });
@@ -967,36 +967,6 @@ export default class Country {
           </div>
         `;
         this.longWeekends = listData = dataList;
-        break;
-      case "currency":
-        getCardStructure = (item) => {
-          const { conversion_rates } = item;
-          return Object.keys(conversion_rates)
-            .map((key, i) => {
-              return `
-                  <div class="popular-currency-card">
-                    <img
-                      src="https://flagcdn.com/w40/eg.png"
-                      alt="${key}"
-                      class="flag"
-                    />
-                    <div class="info">
-                      <div class="code">
-                        ${key}
-                      </div>
-                      <div class="name">
-                        Egyptian pound
-                      </div>
-                    </div>
-                    <div class="rate">
-                      ${Object.values(conversion_rates).at(i).toFixed(4)}
-                    </div>
-                  </div>
-                `;
-            })
-            .join("");
-        };
-        listData = [dataList];
         break;
       case "sun-times":
         getCardStructure = (item) => {
