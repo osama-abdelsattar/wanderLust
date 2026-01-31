@@ -54,6 +54,8 @@ export default function eventListeners() {
       }
       selectedPage.classList.add("active");
       e.currentTarget.classList.add("active");
+      sidebar.style = "";
+      sidebarOverlay.classList.add("hidden");
       // Navbar Heading
       headerTitle.innerHTML = capitalize(sectionName);
       headerSubtitle.innerHTML = setHeaderSubtitle(sectionName);
@@ -540,6 +542,10 @@ export default function eventListeners() {
         if (result.isConfirmed) {
           localStorage.setItem("plans", "[]");
           displayPlans();
+          const pervActiveBtn = document.querySelector(".plan-filter.active"),
+            allPlansBtn = document.querySelector(".plan-filter:first-child");
+          pervActiveBtn.classList.remove("active");
+          allPlansBtn.classList.add("active");
           Swal.fire({
             title: "Cleared",
             text: "All your plans have been deleted",
