@@ -30,25 +30,30 @@ export default class Country {
     try {
       if (this.facts && this.facts.officialName) return this.facts;
       const response = await fetch(
-          `https://restcountries.com/v3.1/alpha/${this.code}`,
+          `https://api.restcountries.com/countries/v5/codes.alpha_2/${this.code}`,
+          {
+            headers: {
+              Authorization: "Bearer rc_live_d74f54e4f4aa493296ccb9c761fb9d9b",
+            },
+          },
         ),
         data = await response.json(),
-        factsData = await data[0];
+        factsData = await data.data.objects[0];
       this.facts = {
-        officialName: factsData.name.official,
+        officialName: factsData.names.official,
         region: factsData.subregion,
         timeZone: factsData.timezones[0],
         population: factsData.population,
-        area: factsData.area,
+        area: factsData.area.kilometers,
         continent: factsData.region,
-        callingCode: factsData.idd,
-        drivingSide: capitalize(factsData.car.side),
-        weekStart: capitalize(factsData.startOfWeek),
+        callingCode: factsData.calling_codes[0],
+        drivingSide: capitalize(factsData.cars.driving_side),
+        weekStart: capitalize(factsData.date.start_of_week),
         currency: factsData.currencies,
         languages: factsData.languages,
         neighbors: factsData.borders,
-        latitude: factsData.capitalInfo.latlng[0],
-        longitude: factsData.capitalInfo.latlng[1],
+        latitude: factsData.coordinates.lat,
+        longitude: factsData.coordinates.lng,
       };
     } catch {
       hideLoading();
@@ -63,13 +68,18 @@ export default class Country {
           longitude: this.facts.longitude,
         };
       const response = await fetch(
-          "https://restcountries.com/v3.1/alpha/" + this.code,
+          `https://api.restcountries.com/countries/v5/codes.alpha_2/${this.code}`,
+          {
+            headers: {
+              Authorization: "Bearer rc_live_d74f54e4f4aa493296ccb9c761fb9d9b",
+            },
+          },
         ),
         data = await response.json(),
-        factsData = await data[0];
+        factsData = await data.data.objects[0];
       return {
-        latitude: factsData.capitalInfo.latlng[0],
-        longitude: factsData.capitalInfo.latlng[1],
+        latitude: factsData.coordinates.lat,
+        longitude: factsData.coordinates.lng,
       };
     } catch {
       hideLoading();
@@ -116,6 +126,7 @@ export default class Country {
   async exploreCountry() {
     if (this.timeInterval) clearInterval(this.timeInterval);
     await this.setFacts();
+    console.log(this.facts);
     const header = `
       <div class="dashboard-country-header">
         <img
@@ -169,7 +180,7 @@ export default class Country {
           <div class="dashboard-country-detail">
             <i class="fa-solid fa-phone"></i>
             <span class="label">Calling Code</span>
-            <span class="value">${this.facts.callingCode.root + this.facts.callingCode.suffixes[0]}</span>
+            <span class="value">+${this.facts.callingCode}</span>
           </div>
           <div class="dashboard-country-detail">
             <i class="fa-solid fa-car"></i>
@@ -199,11 +210,9 @@ export default class Country {
           <div class="dashboard-country-extra">
             <h4><i class="fa-solid fa-coins"></i> Currency</h4>
             <div class="extra-tags">
-                ${Object.keys(this.facts.currency)
+                ${this.facts.currency
                   .map((currency, i) => {
-                    return `<span class="extra-tag">
-                    ${Object.values(this.facts.currency).at(i).name} (${currency} ${Object.values(this.facts.currency).at(i).symbol})
-                  </span>`;
+                    return `<span class="extra-tag">${currency.name} (${currency.symbol})</span>`;
                   })
                   .join("")}
             </div>
@@ -211,9 +220,9 @@ export default class Country {
           <div class="dashboard-country-extra">
             <h4><i class="fa-solid fa-language"></i> Languages</h4>
             <div class="extra-tags">
-              ${Object.values(this.facts.languages)
+              ${this.facts.languages
                 .map((language) => {
-                  return `<span class="extra-tag">${language}</span>`;
+                  return `<span class="extra-tag">${language.name} (${language.native_name})</span>`;
                 })
                 .join("")}
             </div>
@@ -257,19 +266,22 @@ export default class Country {
     this.alreadyExplored = true;
   }
   getTimeFromTimezone(timeZone) {
-    const match = timeZone.match(/UTC([+-])(\d{2}):(\d{2})/);
-    if (!match) return "00:00:00";
-    const sign = match[1],
-      hours = parseInt(match[2]),
-      minutes = parseInt(match[3]),
-      totalMinutes = (hours * 60 + minutes) * (sign === "+" ? 1 : -1),
-      currentDate = new Date(),
-      utcTime = currentDate.getTime() + currentDate.getTimezoneOffset() * 60000,
-      localTime = new Date(utcTime + totalMinutes * 60000);
-    return localTime.toLocaleTimeString("en-GB", {
+    const regex = /([+-])(\d{1,2}):?(\d{2})?/;
+    const [_, sign, hours, minutes] = timeZone.match(regex);
+
+    const offsetMultiplier =
+      (sign === "+" ? 1 : -1) *
+      (parseInt(hours, 10) * 60 + parseInt(minutes, 10)) *
+      60 *
+      1000;
+
+    const utcT = Date.now();
+    const targetT = new Date(utcT + offsetMultiplier);
+    return targetT.toLocaleTimeString("en-GB", {
       hour: "2-digit",
       minute: "2-digit",
       second: "2-digit",
+      timeZone: "UTC",
       hour12: true,
     });
   }

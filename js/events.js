@@ -428,7 +428,7 @@ export default function eventListeners() {
         e.target.selectedOptions[0].textContent,
         citySelect.value,
         countrySelect.value,
-        allCities.flags.png,
+        allCities.flag.url_png,
       );
       await selectedCountry.previewCountry();
     }, 200),

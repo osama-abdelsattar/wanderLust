@@ -84,17 +84,23 @@ export function editDefaultValues() {
 }
 async function getCity(selectedCountryCode) {
   const response = await fetch(
-      `https://restcountries.com/v3.1/alpha/${selectedCountryCode}`,
+      `https://api.restcountries.com/countries/v5/codes.alpha_2/${selectedCountryCode}`,
+      {
+        headers: {
+          Authorization: "Bearer rc_live_d74f54e4f4aa493296ccb9c761fb9d9b",
+        },
+      },
     ),
     data = await response.json();
-  return data[0];
+  console.log(data.data.objects[0]);
+  return data.data.objects[0];
 }
 export async function setCity(selectedCountryCode) {
   try {
     const allCities = await getCity(selectedCountryCode);
     editDefaultValues();
-    allCities.capital.forEach((city) => {
-      setCityOption(city);
+    allCities.capitals.forEach((city) => {
+      setCityOption(city.name);
     });
     function setCityOption(city) {
       const cityOption = document.createElement("option");
@@ -124,6 +130,6 @@ export function debounce(func, delay = 300) {
   getAllCountryOptions();
   const plansBadge = document.querySelector("#plans-count"),
     planList = JSON.parse(localStorage.getItem("plans"));
-  if (planList.length !== 0) plansBadge.classList.remove("hidden");
-  plansBadge.innerHTML = planList.length;
+  if (planList && planList.length > 0) plansBadge.classList.remove("hidden");
+  plansBadge.innerHTML = planList?.length;
 })();
