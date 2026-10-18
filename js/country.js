@@ -212,7 +212,7 @@ export default class Country {
             <div class="extra-tags">
                 ${this.facts.currency
                   .map((currency, i) => {
-                    return `<span class="extra-tag">${currency.name} (${currency.symbol})</span>`;
+                    return `<span class="extra-tag">${currency.name}${currency.symbol ? ` (${currency.symbol})` : ""}</span>`;
                   })
                   .join("")}
             </div>
@@ -222,7 +222,7 @@ export default class Country {
             <div class="extra-tags">
               ${this.facts.languages
                 .map((language) => {
-                  return `<span class="extra-tag">${language.name} (${language.native_name})</span>`;
+                  return `<span class="extra-tag">${language.name}${language.native_name ? ` (${language.native_name})` : ""}</span>`;
                 })
                 .join("")}
             </div>

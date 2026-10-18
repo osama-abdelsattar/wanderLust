@@ -600,19 +600,26 @@ export function neighborListeners() {
   async function selectNeighborCountry(code) {
     try {
       const response = await fetch(
-          `https://restcountries.com/v3.1/alpha/${code}`,
+          `https://api.restcountries.com/countries/v5/codes.alpha_3/${code}`,
+          {
+            headers: {
+              Authorization: "rc_live_d74f54e4f4aa493296ccb9c761fb9d9b",
+            },
+          },
         ),
         data = await response.json(),
-        countryData = data[0];
+        countryData = data.data.objects[0];
+      console.log(countryData);
       selectedCountry = new Country(
-        countryData.name.common,
-        countryData.capital[0],
-        countryData.cca2,
-        countryData.flags.png,
+        countryData.names.common,
+        countryData.capitals[0],
+        countryData.codes.alpha_2,
+        countryData.flag.url_png,
       );
       await selectedCountry.setFacts();
       return countryData.cca2;
-    } catch {
+    } catch (error) {
+      console.log(error);
       hideLoading();
       alert("failed to get neighbor country data");
     }
