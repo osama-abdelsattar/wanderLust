@@ -126,7 +126,6 @@ export default class Country {
   async exploreCountry() {
     if (this.timeInterval) clearInterval(this.timeInterval);
     await this.setFacts();
-    console.log(this.facts);
     const header = `
       <div class="dashboard-country-header">
         <img
@@ -267,7 +266,18 @@ export default class Country {
   }
   getTimeFromTimezone(timeZone) {
     const regex = /([+-])(\d{1,2}):?(\d{2})?/;
-    const [_, sign, hours, minutes] = timeZone.match(regex);
+    const match = timeZone.match(regex);
+
+    if (!match)
+      return new Date().toLocaleTimeString("en-GB", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        timeZone: "UTC",
+        hour12: true,
+      });
+
+    const [_, sign, hours, minutes] = match;
 
     const offsetMultiplier =
       (sign === "+" ? 1 : -1) *

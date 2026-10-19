@@ -609,7 +609,6 @@ export function neighborListeners() {
         ),
         data = await response.json(),
         countryData = data.data.objects[0];
-      console.log(countryData);
       selectedCountry = new Country(
         countryData.names.common,
         countryData.capitals[0],
@@ -618,8 +617,7 @@ export function neighborListeners() {
       );
       await selectedCountry.setFacts();
       return countryData.cca2;
-    } catch (error) {
-      console.log(error);
+    } catch {
       hideLoading();
       alert("failed to get neighbor country data");
     }

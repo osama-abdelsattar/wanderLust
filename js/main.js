@@ -92,7 +92,6 @@ async function getCity(selectedCountryCode) {
       },
     ),
     data = await response.json();
-  console.log(data.data.objects[0]);
   return data.data.objects[0];
 }
 export async function setCity(selectedCountryCode) {
