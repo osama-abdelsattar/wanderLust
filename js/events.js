@@ -611,7 +611,7 @@ export function neighborListeners() {
         countryData = data.data.objects[0];
       selectedCountry = new Country(
         countryData.names.common,
-        countryData.capitals[0],
+        countryData.capitals[0].name,
         countryData.codes.alpha_2,
         countryData.flag.url_png,
       );
