@@ -26,7 +26,24 @@ This project focuses heavily on **Object-Oriented Programming (OOP)**, **clean c
 
 ## 📁 Repository Structure
 
-- `country.js`: Core domain model managing asynchronous fetches, local caching, time zone conversions, and complex view-rendering matrices.
-- `events.js`: Organizes application-wide input streams, dashboard tab routers, and currency conversion state listeners.
-- `plan.js`: Encapsulates local array modification methods for saving and auditing trip itineraries.
-- `main.js`: Bootstraps global configurations, time tick routines, and shared styling macros.
+```
+js/
+├── constants/
+│   └── constants.js     — API base URLs, country data templates, weather templates
+├── services/
+│   ├── api.js           — HTTP request builders, fetch wrappers (countries, currency)
+│   ├── currency.js      — Currency converter listeners, rate displays, swap logic
+│   ├── sections.js      — Section card rendering, plan-save handlers, empty states
+│   └── weather.js       — Weather code classifiers, icons, wind direction, sun position
+├── utils/
+│   ├── helpers.js       — Reusable utilities (capitalize, debounce, timezone parser)
+│   └── templates.js     — Templates for all sections (cards, states, section components)
+├── country.js           — Country class: data model, facts, preview & explore rendering
+├── plan.js              — Plan class: localStorage CRUD, card rendering, filter & modals
+├── events.js            — Event listener coordinator: navigation, dashboard, plans
+└── main.js              — App bootstrap: global selectors, time ticker, country options
+```
+
+## 🔒 Security & API Key Management
+
+As Wanderlust is deployed as a static client-side web application on **GitHub Pages**, third-party API credentials (such as the REST Countries v5 Bearer token, Ticketmaster API key, and ExchangeRate API key) are secured through **domain / HTTP referrer restrictions** configured in their respective developer dashboards. Any requests initiated outside authorized domains are automatically blocked by the upstream API providers.

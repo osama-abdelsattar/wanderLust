@@ -175,11 +175,8 @@
                   </div>
                   <div class="form-group flex-2" style="width: 100%">
                     <label><i class="fa-solid fa-city"></i> City</label>
-                    <select id="global-city" class="form-select">
+                    <select id="global-city" class="form-select" disabled>
                       <option value="" selected disabled>Select city</option>
-                      <option class="text-center" id="disabled-option" disabled>
-                        Select a country first
-                      </option>
                     </select>
                   </div>
                   <div class="form-group flex-1" style="width: 100%">
@@ -240,7 +237,11 @@
               </div>
               <div class="view-header-selection" id="holidays-selection"></div>
             </div>
-            <div id="holidays-content" class="holidays-content"></div>
+            <div id="holidays-content" class="holidays-content">
+              <div class="loader-container">
+                <div class="loader"></div>
+              </div>
+            </div>
           </section>
           <!-- ==================== EVENTS VIEW ======================= -->
           <section id="events-view" class="view">
@@ -522,18 +523,6 @@
             <div id="plans-content" class="plans-grid"></div>
           </section>
         </main>
-      </div>
-    </div>
-    <!-- Loading -->
-    <div id="loading-overlay" class="loading-overlay hidden">
-      <div class="loading-content">
-        <div class="loading-spinner">
-          <i
-            class="fa-solid fa-paper-plane fa-spin"
-            style="font-size: 32px; color: var(--primary-500)"
-          ></i>
-        </div>
-        <p id="loading-text">Loading...</p>
       </div>
     </div>
     <!-- Toast Container -->

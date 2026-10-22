@@ -11,7 +11,11 @@
 }
 
 .dashboard-search-form {
-  background: linear-gradient(135deg, var(--primary-50) 0%, var(--slate-50) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary-50) 0%,
+    var(--slate-50) 100%
+  );
   border-radius: var(--border-radius-md);
   padding: 24px;
   border: 1px solid var(--primary-100);
@@ -163,12 +167,30 @@
   font-size: 20px;
 }
 
-.qa-primary { background: var(--primary-100); color: var(--primary-600); }
-.qa-success { background: var(--success-100); color: var(--success-600); }
-.qa-warning { background: var(--warning-100); color: var(--warning-600); }
-.qa-danger { background: var(--danger-100); color: var(--danger-600); }
-.qa-purple { background: var(--purple-100); color: var(--purple-600); }
-.qa-info { background: var(--primary-50); color: var(--primary-500); }
+.qa-primary {
+  background: var(--primary-100);
+  color: var(--primary-600);
+}
+.qa-success {
+  background: var(--success-100);
+  color: var(--success-600);
+}
+.qa-warning {
+  background: var(--warning-100);
+  color: var(--warning-600);
+}
+.qa-danger {
+  background: var(--danger-100);
+  color: var(--danger-600);
+}
+.qa-purple {
+  background: var(--purple-100);
+  color: var(--purple-600);
+}
+.qa-info {
+  background: var(--primary-50);
+  color: var(--primary-500);
+}
 
 .quick-action-btn span {
   font-size: 13px;
@@ -214,20 +236,30 @@
 .destination-image-placeholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, var(--slate-200) 0%, var(--slate-100) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--slate-200) 0%,
+    var(--slate-100) 100%
+  );
   animation: shimmer 1.5s infinite;
 }
 
 @keyframes shimmer {
-  0% { opacity: 1; }
-  50% { opacity: 0.6; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 .destination-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, transparent 60%);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -241,7 +273,7 @@
 }
 
 .destination-card p {
-  color: rgba(255,255,255,0.8);
+  color: rgba(255, 255, 255, 0.8);
   font-size: 12px;
 }
 
@@ -272,7 +304,11 @@
 .upcoming-date {
   width: 50px;
   height: 50px;
-  background: linear-gradient(135deg, var(--success-500) 0%, var(--success-600) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--success-500) 0%,
+    var(--success-600) 100%
+  );
   border-radius: var(--border-radius-sm);
   display: flex;
   flex-direction: column;
@@ -338,7 +374,11 @@
 }
 
 .weather-preview-card {
-  background: linear-gradient(135deg, var(--primary-50) 0%, var(--slate-50) 100%);
+  background: linear-gradient(
+    135deg,
+    var(--primary-50) 0%,
+    var(--slate-50) 100%
+  );
   border-radius: var(--border-radius-md);
   padding: 16px;
   text-align: center;
@@ -452,7 +492,7 @@
   height: 67px;
   object-fit: cover;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .dashboard-country-title h3 {
@@ -505,7 +545,7 @@
 .local-time-value {
   font-size: 20px;
   font-weight: 600;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   letter-spacing: 1px;
 }
 
@@ -598,7 +638,9 @@
 }
 
 .extra-tag {
-  display: inline-block;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
   padding: 6px 12px;
   background: white;
   border-radius: 20px;
@@ -612,10 +654,14 @@
   transition: all 0.2s ease;
 }
 
-.extra-tag.border-tag:hover {
+.extra-tag.border-tag:not([disabled]):hover {
   background: var(--primary-500);
   color: white;
   border-color: var(--primary-500);
+}
+.extra-tag.border-tag[disabled] {
+  cursor: none;
+  background-color: var(--slate-200);
 }
 
 /* Dashboard Country Actions */
